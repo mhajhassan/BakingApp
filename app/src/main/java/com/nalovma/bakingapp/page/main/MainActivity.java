@@ -10,7 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.nalovma.bakingapp.R;
-import com.nalovma.bakingapp.page.recipes.RecipesFragment;
+import com.nalovma.bakingapp.page.fragments.RecipesFragment;
 import com.nalovma.bakingapp.utils.Utils;
 
 import butterknife.BindView;

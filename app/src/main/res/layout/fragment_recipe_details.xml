@@ -3,12 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.nalovma.bakingapp.page.fragments.RecipesFragment">
+    tools:context="com.nalovma.bakingapp.page.fragments.RecipeDetailFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recipesRecyclerView"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </androidx.recyclerview.widget.RecyclerView>
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_height="match_parent"
+        android:text="hi"/>
 
 </FrameLayout>
