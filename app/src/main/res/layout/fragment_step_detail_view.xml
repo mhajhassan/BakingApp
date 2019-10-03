@@ -9,8 +9,8 @@
 
     <TextView
         android:id="@+id/stepInstructions"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_width="0dp"
+        android:layout_height="350dp"
         android:padding="8dp"
         android:scrollbars="vertical"
         android:textColor="@android:color/black"

@@ -1,36 +1,41 @@
 package com.nalovma.bakingapp.page.main;
 
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.appcompat.widget.Toolbar;
-import android.widget.Button;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.view.View;
 import android.widget.TextView;
 
 import com.nalovma.bakingapp.R;
-import com.nalovma.bakingapp.page.fragments.RecipesFragment;
-import com.nalovma.bakingapp.utils.Utils;
+import com.nalovma.bakingapp.adapter.RecipeAdapter;
+import com.nalovma.bakingapp.model.Recipe;
+import com.nalovma.bakingapp.page.recipe.RecipeActivity;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements MainNavigation {
+import static com.nalovma.bakingapp.utils.constants.*;
 
-    @BindView(R.id.main_drawer_layout)
-    DrawerLayout mDrawerLayout;
+public class MainActivity extends AppCompatActivity implements MainInterface, RecipeAdapter.RecipeOnItemClickListener {
 
     @BindView(R.id.main_toolbar_title)
     TextView mTitleRoomTextView;
 
-    @BindView(R.id.main_toolbar)
-    Toolbar mToolbar;
 
-    @BindView(R.id.drawer_recipes)
-    Button mDrawerRecipesButton;
+    @BindView(R.id.recipesRecyclerView)
+    RecyclerView mRecipesRecyclerView;
 
-    private NavigationDrawerFragment mNavigationDrawerFragment;
+    private RecipeAdapter recipeAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +43,25 @@ public class MainActivity extends AppCompatActivity implements MainNavigation {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        setSupportActionBar(mToolbar);
-        mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.main_drawer_fragment);
-        mNavigationDrawerFragment.setUp(R.id.main_drawer_fragment, mDrawerLayout, mToolbar);
-        switchFragment(new RecipesFragment());
+        recipeAdapter = new RecipeAdapter();
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        int spanCount = 1;
+        if (isTablet) {
+            spanCount = 3;
+        }
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, spanCount);
+        mRecipesRecyclerView.setLayoutManager(gridLayoutManager);
+        mRecipesRecyclerView.setAdapter(recipeAdapter);
+        mRecipesRecyclerView.setHasFixedSize(true);
+        setToolbarTitle(getString(R.string.recipes_list));
+        initData();
+    }
+
+    private void initData() {
+
+        MainViewModel vm = ViewModelProviders.of(this).get(MainViewModel.class);
+        vm.mainInterface = this;
+        vm.loadData();
     }
 
     public void setToolbarTitle(String title) {
@@ -49,44 +69,15 @@ public class MainActivity extends AppCompatActivity implements MainNavigation {
     }
 
     @Override
-    public void goToRecipes() {
-        switchFragment(new RecipesFragment());
-    }
-
-    private void switchFragment(@NonNull Fragment fragment) {
-        switchFragment(fragment, true);
-    }
-
-    private void switchFragment(@NonNull Fragment fragment, boolean clearBackStack) {
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
-        if (fragment.getClass().isInstance(currentFragment)) {
-            return;
-        }
-        if (clearBackStack) {
-            Utils.clearFullBackStackButFirst(this);
-        }
-        addFragmentToBackStack(fragment);
-    }
-
-    private void addFragmentToBackStack(@NonNull Fragment fragment) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.main_container, fragment, fragment.getTag())
-                .addToBackStack(fragment.getClass().getSimpleName())
-                .commit();
+    public void onRecipeItemClick(View view, int position) {
+        Recipe recipe = recipeAdapter.getRecipeByPosition(position);
+        Intent intent = new Intent(MainActivity.this, RecipeActivity.class);
+        intent.putExtra(RECIPE_ID, recipe);
+        startActivity(intent);
     }
 
     @Override
-    public void onBackPressed() {
-        if (mNavigationDrawerFragment.isDrawerOpen()) {
-            mNavigationDrawerFragment.closeDrawer();
-            return;
-        }
-        if (getSupportFragmentManager().getBackStackEntryCount() <= 1) {
-            finish();
-            return;
-        }
-        mNavigationDrawerFragment.setButtonActivated(mNavigationDrawerFragment.mDrawerScheduleButton);
-        super.onBackPressed();
+    public void setRecipe(List<Recipe> recipes) {
+        recipeAdapter.setRecipe(recipes, this);
     }
 }

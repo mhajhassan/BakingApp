@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nalovma.bakingapp">
-    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
+        android:configChanges="keyboardHidden"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:configChanges="keyboardHidden"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".page.main.MainActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+        <activity android:name=".page.recipe.RecipeActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode">
+        </activity>
+        <activity
+            android:name=".page.main.MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,5 +23,7 @@
             </intent-filter>
         </activity>
     </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

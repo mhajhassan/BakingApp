@@ -16,7 +16,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:background="@color/colorAccent"
+            android:background="@drawable/baseline_fastfood_black_18dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -40,6 +40,7 @@
             android:textColor="@android:color/black"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/stepThumbnail"
+            app:layout_constraintEnd_toStartOf="@+id/stepNumber"
             app:layout_constraintStart_toEndOf="@+id/stepThumbnail"
             app:layout_constraintTop_toTopOf="@+id/stepThumbnail"
             tools:text="Recipe Introduction" />

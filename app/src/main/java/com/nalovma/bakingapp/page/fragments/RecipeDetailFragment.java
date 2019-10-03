@@ -20,7 +20,7 @@ import com.nalovma.bakingapp.page.common.BaseFragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.nalovma.bakingapp.page.fragments.StepDetailViewFragment.STEP;
+import static com.nalovma.bakingapp.utils.constants.*;
 
 public class RecipeDetailFragment extends BaseFragment implements StepAdapter.StepOnItemClickListener {
 
@@ -28,7 +28,7 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
     RecyclerView mStepsRecyclerView;
 
     private StepAdapter stepAdapter;
-    public static final String RECIPE = "recipe";
+
 
     @Nullable
     @Override
@@ -44,7 +44,7 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
         ButterKnife.bind(this, view);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            Recipe recipe = (Recipe) bundle.getParcelable(RECIPE);
+            Recipe recipe = (Recipe) bundle.getParcelable(RECIPE_ID);
             if (recipe != null)
                 initData(recipe);
         }
@@ -61,9 +61,10 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
 
     @Override
     public void onStepItemClick(View view, int position) {
+
         Step step = stepAdapter.getStepByPosition(position);
         Bundle bundle = new Bundle();
-        bundle.putParcelable(STEP, step);
+        bundle.putParcelable(STEP_ID, step);
         StepDetailViewFragment fragment = new StepDetailViewFragment();
         fragment.setArguments(bundle);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();

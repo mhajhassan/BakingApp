@@ -27,9 +27,10 @@ import com.nalovma.bakingapp.page.common.BaseFragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.nalovma.bakingapp.utils.constants.STEP_ID;
+
 public class StepDetailViewFragment extends BaseFragment {
 
-    public static final String STEP = "step";
 
     @BindView(R.id.player_view)
     PlayerView mPlayerView;
@@ -37,18 +38,23 @@ public class StepDetailViewFragment extends BaseFragment {
     @BindView(R.id.stepInstructions)
     TextView mStepInstructions;
 
-    SimpleExoPlayer player;
+    private SimpleExoPlayer player;
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         int currentOrientation = getResources().getConfiguration().orientation;
-        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-            mStepInstructions.setVisibility(View.GONE);
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (!isTablet) {
+            if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                mStepInstructions.setVisibility(View.GONE);
+                setToolbarVisible(false);
+            } else {
+                mStepInstructions.setVisibility(View.VISIBLE);
+                setToolbarVisible(true);
+            }
         }
-        else {
-            mStepInstructions.setVisibility(View.VISIBLE);
-        }
+
     }
 
     @Nullable
@@ -65,7 +71,7 @@ public class StepDetailViewFragment extends BaseFragment {
         ButterKnife.bind(this, view);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            Step step = (Step) bundle.getParcelable(STEP);
+            Step step = (Step) bundle.getParcelable(STEP_ID);
             if (step != null) {
                 initStepData(step);
             }
@@ -75,7 +81,7 @@ public class StepDetailViewFragment extends BaseFragment {
     private void initStepData(Step step) {
         Context context = requireContext();
 
-        if (!step.getDescription().isEmpty()){
+        if (!step.getDescription().isEmpty()) {
             mStepInstructions.setText(step.getDescription());
         }
         if (!step.getVideoURL().isEmpty()) {
