@@ -24,8 +24,8 @@ android {
 
 dependencies {
     def lifecycle_version = "2.1.0"
-    def butterknife_version="10.1.0"
-    def glide_version= "4.9.0"
+    def butterknife_version = "10.1.0"
+    def glide_version = "4.9.0"
     def retrofit2_version = "2.6.0"
 
 
@@ -61,4 +61,7 @@ dependencies {
     // lifecycle
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+
+    // exoplayer
+    implementation 'com.google.android.exoplayer:exoplayer:2.10.4'
 }

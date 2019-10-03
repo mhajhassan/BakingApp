@@ -25,12 +25,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.nalovma.bakingapp.page.fragments.RecipeDetailFragment.RECIPE;
+
 public class RecipesFragment extends BaseFragment implements MainInterface, RecipeAdapter.RecipeOnItemClickListener {
 
     @BindView(R.id.recipesRecyclerView)
     RecyclerView mRecipesRecyclerView;
-
-    private static MainViewModel vm;
 
     private RecipeAdapter recipeAdapter;
 
@@ -51,13 +51,13 @@ public class RecipesFragment extends BaseFragment implements MainInterface, Reci
         mRecipesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecipesRecyclerView.setAdapter(recipeAdapter);
         mRecipesRecyclerView.setHasFixedSize(true);
-        setToolbarTitle("Recipes List");
+        setToolbarTitle(getString(R.string.recipes_list));
         initData();
     }
 
     private void initData() {
 
-        vm = ViewModelProviders.of(this).get(MainViewModel.class);
+        MainViewModel vm = ViewModelProviders.of(this).get(MainViewModel.class);
         vm.mainInterface = this;
         vm.loadData();
     }
@@ -71,7 +71,7 @@ public class RecipesFragment extends BaseFragment implements MainInterface, Reci
     public void onRecipeItemClick(View view, int position) {
         Recipe recipe = recipeAdapter.getRecipeByPosition(position);
         Bundle bundle = new Bundle();
-        bundle.putParcelable("recipe",recipe);
+        bundle.putParcelable(RECIPE, recipe);
         RecipeDetailFragment fragment = new RecipeDetailFragment();
         fragment.setArguments(bundle);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();

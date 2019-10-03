@@ -6,4 +6,6 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="recipe_ingredients">Recipe Ingredients</string>
+    <string name="recipes_list">Recipes List</string>
 </resources>
