@@ -16,6 +16,7 @@ import com.nalovma.bakingapp.adapter.StepAdapter;
 import com.nalovma.bakingapp.model.Recipe;
 import com.nalovma.bakingapp.model.Step;
 import com.nalovma.bakingapp.page.common.BaseFragment;
+import com.nalovma.bakingapp.widget.WidgetService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,6 +50,7 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
             recipe = (Recipe) bundle.getParcelable(RECIPE_ID);
             if (recipe != null)
                 initData(recipe);
+            WidgetService.startUpdateWidget(getActivity(),recipe);
         }
     }
 
