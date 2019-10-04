@@ -61,15 +61,25 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
 
     @Override
     public void onStepItemClick(View view, int position) {
-
         Step step = stepAdapter.getStepByPosition(position);
         Bundle bundle = new Bundle();
         bundle.putParcelable(STEP_ID, step);
         StepDetailViewFragment fragment = new StepDetailViewFragment();
         fragment.setArguments(bundle);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.main_container, fragment, fragment.getTag())
-                .addToBackStack(fragment.getClass().getSimpleName())
-                .commit();
+
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (!isTablet) {
+            fragmentTransaction.replace(R.id.main_container, fragment, fragment.getTag())
+                    .addToBackStack(fragment.getClass().getSimpleName())
+                    .commit();
+        }else {
+            fragmentTransaction.replace(R.id.steps_container, fragment, fragment.getTag())
+                    .addToBackStack(fragment.getClass().getSimpleName())
+                    .commit();
+        }
+
+
+
     }
 }

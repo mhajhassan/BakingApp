@@ -1,9 +1,8 @@
 package com.nalovma.bakingapp.page.recipe;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +12,7 @@ import android.widget.TextView;
 import com.nalovma.bakingapp.R;
 import com.nalovma.bakingapp.model.Recipe;
 import com.nalovma.bakingapp.page.fragments.RecipeDetailFragment;
-import com.nalovma.bakingapp.utils.Utils;
+import com.nalovma.bakingapp.page.fragments.StepDetailViewFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,34 +36,27 @@ public class RecipeActivity extends AppCompatActivity {
         Intent intent = getIntent();
         Recipe recipe = intent.getParcelableExtra(RECIPE_ID);
         setToolbarTitle(recipe.getName());
-        
+
         Bundle bundle = new Bundle();
         bundle.putParcelable(RECIPE_ID, recipe);
 
         RecipeDetailFragment fragment = new RecipeDetailFragment();
         fragment.setArguments(bundle);
-        switchFragment(fragment,true);
-    }
 
-    private void switchFragment(@NonNull Fragment fragment, boolean clearBackStack) {
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.main_container);
-        if (fragment.getClass().isInstance(currentFragment)) {
-            return;
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.main_container, fragment);
+        ft.commit();
+
+        if (findViewById(R.id.steps_container) != null) {
+            if(savedInstanceState == null) {
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.steps_container, new StepDetailViewFragment());
+                fragmentTransaction.commit();
+            }
         }
-        if (clearBackStack) {
-            Utils.clearFullBackStackButFirst(this);
-        }
-        addFragmentToBackStack(fragment);
-    }
-
-    private void addFragmentToBackStack(@NonNull Fragment fragment) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.main_container, fragment, fragment.getTag())
-                .addToBackStack(fragment.getClass().getSimpleName())
-                .commit();
 
     }
+
 
     public void setToolbarTitle(String title) {
         mTitleRoomTextView.setText(title);
@@ -81,8 +73,7 @@ public class RecipeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-
-        if (getSupportFragmentManager().getBackStackEntryCount() <= 1) {
+        if (findViewById(R.id.steps_container) != null){
             finish();
             return;
         }
