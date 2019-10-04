@@ -19,6 +19,7 @@ import com.nalovma.bakingapp.page.common.BaseFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static com.nalovma.bakingapp.utils.constants.*;
 
@@ -29,6 +30,7 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
 
     private StepAdapter stepAdapter;
 
+    private Recipe recipe;
 
     @Nullable
     @Override
@@ -44,9 +46,29 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
         ButterKnife.bind(this, view);
         Bundle bundle = getArguments();
         if (bundle != null) {
-            Recipe recipe = (Recipe) bundle.getParcelable(RECIPE_ID);
+            recipe = (Recipe) bundle.getParcelable(RECIPE_ID);
             if (recipe != null)
                 initData(recipe);
+        }
+    }
+
+    @OnClick(R.id.ingredientButton)
+    public void onIngredientClicked() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(RECIPE_ID, recipe);
+        IngredientFragment fragment = new IngredientFragment();
+        fragment.setArguments(bundle);
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+        if (!isTablet) {
+            fragmentTransaction.replace(R.id.main_container, fragment, fragment.getTag())
+                    .addToBackStack(fragment.getClass().getSimpleName())
+                    .commit();
+        } else {
+            fragmentTransaction.replace(R.id.steps_container, fragment, fragment.getTag())
+                    .addToBackStack(fragment.getClass().getSimpleName())
+                    .commit();
         }
     }
 
@@ -73,13 +95,11 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
             fragmentTransaction.replace(R.id.main_container, fragment, fragment.getTag())
                     .addToBackStack(fragment.getClass().getSimpleName())
                     .commit();
-        }else {
+        } else {
             fragmentTransaction.replace(R.id.steps_container, fragment, fragment.getTag())
                     .addToBackStack(fragment.getClass().getSimpleName())
                     .commit();
         }
-
-
 
     }
 }
