@@ -1,5 +1,8 @@
 package com.nalovma.bakingapp.page.main;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -9,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.IdlingResource;
 
 import android.view.View;
 import android.widget.TextView;
@@ -17,6 +21,7 @@ import com.nalovma.bakingapp.R;
 import com.nalovma.bakingapp.adapter.RecipeAdapter;
 import com.nalovma.bakingapp.model.Recipe;
 import com.nalovma.bakingapp.page.recipe.RecipeActivity;
+import com.nalovma.bakingapp.utils.SimpleIdlingResource;
 
 import java.util.List;
 
@@ -26,6 +31,9 @@ import butterknife.ButterKnife;
 import static com.nalovma.bakingapp.utils.constants.*;
 
 public class MainActivity extends AppCompatActivity implements MainInterface, RecipeAdapter.RecipeOnItemClickListener {
+
+    @Nullable
+    private SimpleIdlingResource simpleIdlingResource;
 
     @BindView(R.id.main_toolbar_title)
     TextView mTitleRoomTextView;
@@ -61,7 +69,9 @@ public class MainActivity extends AppCompatActivity implements MainInterface, Re
 
         MainViewModel vm = ViewModelProviders.of(this).get(MainViewModel.class);
         vm.mainInterface = this;
+        setSimpleIdlingResource(false);
         vm.loadData();
+
     }
 
     public void setToolbarTitle(String title) {
@@ -79,5 +89,25 @@ public class MainActivity extends AppCompatActivity implements MainInterface, Re
     @Override
     public void setRecipe(List<Recipe> recipes) {
         recipeAdapter.setRecipe(recipes, this);
+        setSimpleIdlingResource(true);
+    }
+
+
+    /**
+     * Only called from test, creates and returns a new {@link SimpleIdlingResource}.
+     */
+    @VisibleForTesting
+    @NonNull
+    public IdlingResource getIdlingResource() {
+        if (simpleIdlingResource == null) {
+            simpleIdlingResource = new SimpleIdlingResource();
+        }
+        return simpleIdlingResource;
+    }
+
+    private void setSimpleIdlingResource(boolean state) {
+        if (simpleIdlingResource != null) {
+            simpleIdlingResource.setIdleState(state);
+        }
     }
 }

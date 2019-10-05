@@ -7,15 +7,18 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.IdlingResource;
 
 import com.nalovma.bakingapp.R;
 import com.nalovma.bakingapp.adapter.StepAdapter;
 import com.nalovma.bakingapp.model.Recipe;
 import com.nalovma.bakingapp.model.Step;
 import com.nalovma.bakingapp.page.common.BaseFragment;
+import com.nalovma.bakingapp.utils.SimpleIdlingResource;
 import com.nalovma.bakingapp.widget.WidgetService;
 
 import butterknife.BindView;
@@ -25,6 +28,9 @@ import butterknife.OnClick;
 import static com.nalovma.bakingapp.utils.constants.*;
 
 public class RecipeDetailFragment extends BaseFragment implements StepAdapter.StepOnItemClickListener {
+
+    @Nullable
+    private SimpleIdlingResource simpleIdlingResource;
 
     @BindView(R.id.stepsRecyclerView)
     RecyclerView mStepsRecyclerView;
@@ -45,6 +51,7 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
+        setSimpleIdlingResource(false);
         Bundle bundle = getArguments();
         if (bundle != null) {
             recipe = (Recipe) bundle.getParcelable(RECIPE_ID);
@@ -81,6 +88,7 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
         mStepsRecyclerView.setHasFixedSize(true);
         setToolbarTitle(recipe.getName());
         stepAdapter.setStep(recipe.getSteps(), this);
+        setSimpleIdlingResource(true);
     }
 
     @Override
@@ -103,5 +111,23 @@ public class RecipeDetailFragment extends BaseFragment implements StepAdapter.St
                     .commit();
         }
 
+    }
+
+    /**
+     * Only called from test, creates and returns a new {@link SimpleIdlingResource}.
+     */
+    @VisibleForTesting
+    @NonNull
+    public IdlingResource getIdlingResource() {
+        if (simpleIdlingResource == null) {
+            simpleIdlingResource = new SimpleIdlingResource();
+        }
+        return simpleIdlingResource;
+    }
+
+    private void setSimpleIdlingResource(boolean state) {
+        if (simpleIdlingResource != null) {
+            simpleIdlingResource.setIdleState(state);
+        }
     }
 }
