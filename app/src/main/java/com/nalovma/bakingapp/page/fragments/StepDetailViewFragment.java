@@ -1,7 +1,6 @@
 package com.nalovma.bakingapp.page.fragments;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,7 +16,6 @@ import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -45,12 +43,23 @@ public class StepDetailViewFragment extends BaseFragment {
     private static final String KEY_POSITION = "position";
     private static final String KEY_AUTO_PLAY = "auto_play";
 
-
+    private Uri videoUri;
     private boolean startAutoPlay;
     private int startWindow;
     private long startPosition;
 
     private MediaSource videoSource;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            startAutoPlay = savedInstanceState.getBoolean(KEY_AUTO_PLAY);
+            startWindow = savedInstanceState.getInt(KEY_WINDOW);
+            startPosition = savedInstanceState.getLong(KEY_POSITION);
+        }
+    }
 
     @Nullable
     @Override
@@ -61,14 +70,14 @@ public class StepDetailViewFragment extends BaseFragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState != null) {
-            startAutoPlay = savedInstanceState.getBoolean(KEY_AUTO_PLAY);
-            startWindow = savedInstanceState.getInt(KEY_WINDOW);
-            startPosition = savedInstanceState.getLong(KEY_POSITION);
-        } else {
-            clearStartPosition();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            Step step = (Step) bundle.getParcelable(STEP_ID);
+            if (step != null) {
+                initStepData(step);
+            }
         }
     }
 
@@ -81,61 +90,49 @@ public class StepDetailViewFragment extends BaseFragment {
         outState.putLong(KEY_POSITION, startPosition);
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ButterKnife.bind(this, view);
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            Step step = (Step) bundle.getParcelable(STEP_ID);
-            if (step != null) {
-                initStepData(step);
-            }
-        }
-    }
-
     private void initStepData(Step step) {
-        Context context = requireContext();
 
         if (!step.getDescription().isEmpty()) {
             mStepInstructions.setText(step.getDescription());
         }
         if (!step.getVideoURL().isEmpty()) {
-            player = ExoPlayerFactory.newSimpleInstance(context);
-            mPlayerView.setPlayer(player);
+            videoUri = Uri.parse(step.getVideoURL());
 
-            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context,
-                    Util.getUserAgent(context, getString(R.string.app_name)));
-
-            videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(step.getVideoURL()));
-
-            player.setPlayWhenReady(startAutoPlay);
-            boolean haveStartPosition = startWindow != C.INDEX_UNSET;
-            if (haveStartPosition) {
-                player.seekTo(startWindow, startPosition);
-            }
-            player.prepare(videoSource, !haveStartPosition, false);
         } else {
             mPlayerView.setVisibility(View.GONE);
         }
     }
 
-    private void updateStartPosition() {
-        if (player != null) {
-            startAutoPlay = player.getPlayWhenReady();
-            startWindow = player.getCurrentWindowIndex();
-            startPosition = Math.max(0, player.getContentPosition());
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) {
+            initializePlayer();
         }
+    }
+
+    private void initializePlayer() {
+        Context context = requireContext();
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context,
+                Util.getUserAgent(context, getString(R.string.app_name)));
+
+        videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(videoUri);
+        player = ExoPlayerFactory.newSimpleInstance(context);
+        mPlayerView.setPlayer(player);
+        player.setPlayWhenReady(startAutoPlay);
+        boolean haveStartPosition = startWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(startWindow, startPosition);
+        }
+        player.prepare(videoSource, !haveStartPosition, false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (Util.SDK_INT <= 23 || player == null) {
-            if (mPlayerView != null) {
-                mPlayerView.onResume();
-            }
+        if ((Util.SDK_INT <= 23 || player == null)) {
+            initializePlayer();
         }
     }
 
@@ -143,9 +140,6 @@ public class StepDetailViewFragment extends BaseFragment {
     public void onPause() {
         super.onPause();
         if (Util.SDK_INT <= 23) {
-            if (mPlayerView != null) {
-                mPlayerView.onPause();
-            }
             releasePlayer();
         }
     }
@@ -154,27 +148,24 @@ public class StepDetailViewFragment extends BaseFragment {
     public void onStop() {
         super.onStop();
         if (Util.SDK_INT > 23) {
-            if (mPlayerView != null) {
-                mPlayerView.onPause();
-            }
             releasePlayer();
         }
     }
 
-    private void clearStartPosition() {
-        startAutoPlay = true;
-        startWindow = C.INDEX_UNSET;
-        startPosition = C.TIME_UNSET;
-    }
-
     private void releasePlayer() {
         if (player != null) {
-
             updateStartPosition();
-
             player.release();
             player = null;
             videoSource = null;
+        }
+    }
+
+    private void updateStartPosition() {
+        if (player != null) {
+            startAutoPlay = player.getPlayWhenReady();
+            startWindow = player.getCurrentWindowIndex();
+            startPosition = Math.max(0, player.getContentPosition());
         }
     }
 }
