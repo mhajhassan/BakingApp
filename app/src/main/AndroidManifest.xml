@@ -13,8 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".page.recipe.RecipeActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"></activity>
+            android:name=".page.recipe.RecipeActivity">
+        </activity>
 
         <activity
             android:name=".page.main.MainActivity"

@@ -1,11 +1,13 @@
 package com.nalovma.bakingapp.page.recipe;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -20,8 +22,6 @@ import butterknife.ButterKnife;
 import static com.nalovma.bakingapp.utils.constants.RECIPE_ID;
 
 public class RecipeActivity extends AppCompatActivity {
-    @BindView(R.id.main_toolbar_title)
-    TextView mTitleRoomTextView;
 
     @BindView(R.id.main_toolbar)
     Toolbar mToolbar;
@@ -31,35 +31,36 @@ public class RecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
         ButterKnife.bind(this);
-        setSupportActionBar(mToolbar);
 
-        Intent intent = getIntent();
-        Recipe recipe = intent.getParcelableExtra(RECIPE_ID);
-        setToolbarTitle(recipe.getName());
+        if (null == savedInstanceState) {
+            Intent intent = getIntent();
+            Recipe recipe = intent.getParcelableExtra(RECIPE_ID);
+            setToolbarTitle(recipe.getName());
+            mToolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
+            setSupportActionBar(mToolbar);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(RECIPE_ID, recipe);
 
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(RECIPE_ID, recipe);
+            RecipeDetailFragment fragment = new RecipeDetailFragment();
+            fragment.setArguments(bundle);
 
-        RecipeDetailFragment fragment = new RecipeDetailFragment();
-        fragment.setArguments(bundle);
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.main_container, fragment);
+            ft.commit();
 
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.main_container, fragment);
-        ft.commit();
-
-        if (findViewById(R.id.steps_container) != null) {
-            if(savedInstanceState == null) {
+            if (findViewById(R.id.steps_container) != null) {
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.steps_container, new StepDetailViewFragment());
                 fragmentTransaction.commit();
             }
         }
 
+
     }
 
 
     public void setToolbarTitle(String title) {
-        mTitleRoomTextView.setText(title);
+        mToolbar.setTitle(title);
     }
 
     public void setToolbarVisibility(boolean visibility) {
@@ -73,10 +74,18 @@ public class RecipeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (findViewById(R.id.steps_container) != null){
+        if (findViewById(R.id.steps_container) != null) {
             finish();
             return;
         }
         super.onBackPressed();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

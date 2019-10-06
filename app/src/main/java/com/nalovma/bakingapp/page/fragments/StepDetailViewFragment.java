@@ -12,10 +12,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -39,23 +41,16 @@ public class StepDetailViewFragment extends BaseFragment {
     TextView mStepInstructions;
 
     private SimpleExoPlayer player;
+    private static final String KEY_WINDOW = "window";
+    private static final String KEY_POSITION = "position";
+    private static final String KEY_AUTO_PLAY = "auto_play";
 
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        int currentOrientation = getResources().getConfiguration().orientation;
-        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
-        if (!isTablet) {
-            if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                mStepInstructions.setVisibility(View.GONE);
-                setToolbarVisible(false);
-            } else {
-                mStepInstructions.setVisibility(View.VISIBLE);
-                setToolbarVisible(true);
-            }
-        }
 
-    }
+    private boolean startAutoPlay;
+    private int startWindow;
+    private long startPosition;
+
+    private MediaSource videoSource;
 
     @Nullable
     @Override
@@ -63,6 +58,27 @@ public class StepDetailViewFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.fragment_step_detail_view, container, false);
         mUnbinder = ButterKnife.bind(this, view);
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            startAutoPlay = savedInstanceState.getBoolean(KEY_AUTO_PLAY);
+            startWindow = savedInstanceState.getInt(KEY_WINDOW);
+            startPosition = savedInstanceState.getLong(KEY_POSITION);
+        } else {
+            clearStartPosition();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        updateStartPosition();
+        outState.putBoolean(KEY_AUTO_PLAY, startAutoPlay);
+        outState.putInt(KEY_WINDOW, startWindow);
+        outState.putLong(KEY_POSITION, startPosition);
     }
 
     @Override
@@ -91,31 +107,74 @@ public class StepDetailViewFragment extends BaseFragment {
             DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context,
                     Util.getUserAgent(context, getString(R.string.app_name)));
 
-            MediaSource videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
+            videoSource = new ProgressiveMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(Uri.parse(step.getVideoURL()));
 
-            player.setPlayWhenReady(true);
-            player.prepare(videoSource);
+            player.setPlayWhenReady(startAutoPlay);
+            boolean haveStartPosition = startWindow != C.INDEX_UNSET;
+            if (haveStartPosition) {
+                player.seekTo(startWindow, startPosition);
+            }
+            player.prepare(videoSource, !haveStartPosition, false);
         } else {
             mPlayerView.setVisibility(View.GONE);
         }
     }
 
-
-    @Override
-    public void onPause() {
-        super.onPause();
+    private void updateStartPosition() {
         if (player != null) {
-            player.stop();
+            startAutoPlay = player.getPlayWhenReady();
+            startWindow = player.getCurrentWindowIndex();
+            startPosition = Math.max(0, player.getContentPosition());
         }
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (player != null) {
-            player.release();
+    public void onResume() {
+        super.onResume();
+        if (Util.SDK_INT <= 23 || player == null) {
+            if (mPlayerView != null) {
+                mPlayerView.onResume();
+            }
         }
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (Util.SDK_INT <= 23) {
+            if (mPlayerView != null) {
+                mPlayerView.onPause();
+            }
+            releasePlayer();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (Util.SDK_INT > 23) {
+            if (mPlayerView != null) {
+                mPlayerView.onPause();
+            }
+            releasePlayer();
+        }
+    }
+
+    private void clearStartPosition() {
+        startAutoPlay = true;
+        startWindow = C.INDEX_UNSET;
+        startPosition = C.TIME_UNSET;
+    }
+
+    private void releasePlayer() {
+        if (player != null) {
+
+            updateStartPosition();
+
+            player.release();
+            player = null;
+            videoSource = null;
+        }
     }
 }

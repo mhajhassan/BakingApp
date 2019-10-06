@@ -35,9 +35,8 @@ public class MainActivity extends AppCompatActivity implements MainInterface, Re
     @Nullable
     private SimpleIdlingResource simpleIdlingResource;
 
-    @BindView(R.id.main_toolbar_title)
-    TextView mTitleRoomTextView;
-
+    @BindView(R.id.main_toolbar)
+    Toolbar mToolbar;
 
     @BindView(R.id.recipesRecyclerView)
     RecyclerView mRecipesRecyclerView;
@@ -62,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements MainInterface, Re
         mRecipesRecyclerView.setAdapter(recipeAdapter);
         mRecipesRecyclerView.setHasFixedSize(true);
         setToolbarTitle(getString(R.string.recipes_list));
+        setSupportActionBar(mToolbar);
+        getIdlingResource();
         initData();
     }
 
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements MainInterface, Re
     }
 
     public void setToolbarTitle(String title) {
-        mTitleRoomTextView.setText(title);
+        mToolbar.setTitle(title);
     }
 
     @Override
